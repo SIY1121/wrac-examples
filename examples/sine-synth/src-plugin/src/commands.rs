@@ -166,6 +166,8 @@ pub(crate) fn register_commands(
 
     {
         let shared = shared.clone();
+        // This is intentionally separate from parameter editing: GUI keyboard presses are
+        // momentary audition input, not automatable host state or project state.
         command_handler.register_sync("set_gui_note", move |ctx| {
             let semitone = ctx.arg::<u8>("semitone").map_err(|e| e.to_string())?;
             let active = ctx.arg::<bool>("active").map_err(|e| e.to_string())?;

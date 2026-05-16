@@ -195,15 +195,8 @@ body {
 }
 
 .key.white {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding-bottom: 12px;
   border-right: 1px solid rgba(13, 18, 24, 0.35);
   background: linear-gradient(180deg, #fff9ed, #d6d0c5);
-  color: rgba(13, 18, 24, 0.48);
-  font-size: 12px;
-  font-weight: 700;
 }
 
 .key.white:last-child {

@@ -418,20 +418,7 @@ gainInput.addEventListener("keydown", (event) => {
 });
 gainInput.addEventListener("pointerdown", (event) => event.stopPropagation());
 
-const keyboardMap = new Map([
-  ["a", "C"],
-  ["w", "C#"],
-  ["s", "D"],
-  ["e", "D#"],
-  ["d", "E"],
-  ["f", "F"],
-  ["t", "F#"],
-  ["g", "G"],
-  ["y", "G#"],
-  ["h", "A"],
-  ["u", "A#"],
-  ["j", "B"],
-]);
+// The on-screen keyboard lets the synth be auditioned without setting up MIDI routing first.
 const noteSemitones = new Map([
   ["C", 0],
   ["C#", 1],
@@ -465,6 +452,9 @@ function setNoteActive(note: string, active: boolean): void {
   if (semitone === undefined) {
     return;
   }
+  // Note state is sent as a compact semitone toggle instead of synthetic host MIDI.
+  // The native side can then merge it with real host note input without pretending the
+  // GUI is a CLAP event source.
   void invoke("set_gui_note", { semitone, active });
 }
 
@@ -486,31 +476,9 @@ keys.forEach((key) => {
   key.addEventListener("pointercancel", release);
 });
 
-window.addEventListener("keydown", (event) => {
-  if (isEditableElement(event.target)) {
-    return;
-  }
-  const note = keyboardMap.get(event.key.toLowerCase());
-  if (!note || event.repeat) {
-    return;
-  }
-  event.preventDefault();
-  setNoteActive(note, true);
-});
-
-window.addEventListener("keyup", (event) => {
-  if (isEditableElement(event.target)) {
-    return;
-  }
-  const note = keyboardMap.get(event.key.toLowerCase());
-  if (!note) {
-    return;
-  }
-  event.preventDefault();
-  setNoteActive(note, false);
-});
-
 window.addEventListener("blur", () => {
+  // Browser focus can disappear without pointerup. Clear all GUI-held notes so an
+  // audition note cannot hang after the editor window loses focus.
   for (const note of Array.from(activeNotes)) {
     setNoteActive(note, false);
   }

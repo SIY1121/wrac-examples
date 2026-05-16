@@ -100,6 +100,9 @@ pub(crate) struct SharedState {
     // Linear amplitude.
     gain: AtomicF32,
     bypass: AtomicBool,
+    // GUI audition notes are not host parameters and must not be saved in project state.
+    // A 12-bit atomic mask gives the audio thread a lock-free snapshot of the one-octave
+    // keyboard while keeping the example smaller than a full event queue.
     gui_note_mask: AtomicU16,
 }
 

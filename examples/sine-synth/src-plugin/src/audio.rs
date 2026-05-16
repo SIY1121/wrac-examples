@@ -78,6 +78,8 @@ impl WracGainAudioProcessor {
         let mut bypass = self.shared.bypass();
         let mut segment_start = 0;
         let frames_count = context.frames_count as usize;
+        // GUI notes are editor audition state rather than host events, so they are sampled
+        // once per block. Host-provided note events below remain sample-accurate.
         self.sync_gui_notes();
 
         for event in context.events.input.iter() {
@@ -144,6 +146,8 @@ impl WracGainAudioProcessor {
             if changed & bit == 0 {
                 continue;
             }
+            // Middle C keeps the on-screen octave in a familiar range and avoids adding
+            // octave controls to this first synth example.
             let key = 60 + semitone as i16;
             if next_mask & bit == 0 {
                 self.note_off_key(key);
