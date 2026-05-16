@@ -1,0 +1,53 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Debug gain-basic standalone",
+			"type": "lldb",
+			"request": "launch",
+			"program": "${workspaceFolder}/target/wrac-examples/gain-basic/wrac/standalone/debug/WRAC Gain Basic Standalone.app/Contents/MacOS/WRAC Gain Basic Standalone",
+			"osx": {
+				"request": "attach",
+				"program": "${workspaceFolder}/target/wrac-examples/gain-basic/wrac/standalone/debug/WRAC Gain Basic Standalone.app/Contents/MacOS/WRAC Gain Basic Standalone",
+				"preLaunchTask": "build-and-open-gain-basic-standalone"
+			},
+			"windows": {
+				"program": "${workspaceFolder}/target/wrac-examples/gain-basic/wrac/standalone/debug/WRAC Gain Basic Standalone.exe"
+			},
+			"linux": {
+				"program": "${workspaceFolder}/target/wrac-examples/gain-basic/wrac/standalone/debug/WRAC Gain Basic Standalone"
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}",
+			"env": {
+				"RUST_BACKTRACE": "1"
+			},
+			"terminal": "console",
+			"preLaunchTask": "build-gain-basic-standalone"
+		},
+		{
+			"name": "Debug sine-synth standalone",
+			"type": "lldb",
+			"request": "launch",
+			"program": "${workspaceFolder}/target/wrac-examples/sine-synth/wrac/standalone/debug/WRAC Sine Synth Standalone.app/Contents/MacOS/WRAC Sine Synth Standalone",
+			"osx": {
+				"request": "attach",
+				"program": "${workspaceFolder}/target/wrac-examples/sine-synth/wrac/standalone/debug/WRAC Sine Synth Standalone.app/Contents/MacOS/WRAC Sine Synth Standalone",
+				"preLaunchTask": "build-and-open-sine-synth-standalone"
+			},
+			"windows": {
+				"program": "${workspaceFolder}/target/wrac-examples/sine-synth/wrac/standalone/debug/WRAC Sine Synth Standalone.exe"
+			},
+			"linux": {
+				"program": "${workspaceFolder}/target/wrac-examples/sine-synth/wrac/standalone/debug/WRAC Sine Synth Standalone"
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}",
+			"env": {
+				"RUST_BACKTRACE": "1"
+			},
+			"terminal": "console",
+			"preLaunchTask": "build-sine-synth-standalone"
+		}
+	]
+}

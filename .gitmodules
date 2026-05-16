@@ -1,0 +1,3 @@
+[submodule "wrac-plugin-template"]
+	path = deps/wrac-plugin-template
+	url = https://github.com/novonotes/wrac-plugin-template.git

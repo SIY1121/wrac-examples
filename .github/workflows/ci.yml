@@ -1,0 +1,130 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+      - develop
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  MACOSX_DEPLOYMENT_TARGET: "11.0"
+
+jobs:
+  rust-format:
+    name: Rust format
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Show Rust version
+        run: |
+          rustup show
+          rustc --version
+          cargo --version
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+  rust-check:
+    name: Rust check (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Linux WebView dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtkmm-3.0-dev libx11-dev libasound2-dev
+
+      - name: Show Rust version
+        run: |
+          rustup show
+          rustc --version
+          cargo --version
+
+      - name: Check workspace
+        run: cargo check --locked --workspace
+
+  clap-build:
+    name: CLAP build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    needs:
+      - rust-format
+      - rust-check
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            verify: |
+              test -f "target/wrac-examples/gain-basic/wrac/plugins/release/WRAC Gain Basic.clap"
+              test -f "target/wrac-examples/sine-synth/wrac/plugins/release/WRAC Sine Synth.clap"
+          - os: windows-latest
+            verify: |
+              test -f "target/wrac-examples/gain-basic/wrac/plugins/release/WRAC Gain Basic.clap"
+              test -f "target/wrac-examples/sine-synth/wrac/plugins/release/WRAC Sine Synth.clap"
+          - os: macos-latest
+            verify: |
+              test -d "target/wrac-examples/gain-basic/wrac/plugins/release/WRAC Gain Basic.clap"
+              test -d "target/wrac-examples/sine-synth/wrac/plugins/release/WRAC Sine Synth.clap"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Linux WebView dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtkmm-3.0-dev libx11-dev libasound2-dev
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+          cache: npm
+          cache-dependency-path: examples/*/src-gui/package-lock.json
+
+      - name: Show tool versions
+        run: |
+          rustup show
+          rustc --version
+          cargo --version
+          node --version
+          npm --version
+
+      - name: Build CLAP artifacts
+        run: cargo xtask build --all --target=clap --release
+
+      - name: Verify CLAP artifacts
+        run: ${{ matrix.verify }}

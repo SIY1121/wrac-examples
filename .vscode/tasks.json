@@ -1,0 +1,125 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "build-gain-basic-standalone",
+			"type": "process",
+			"command": "cargo",
+			"args": [
+				"xtask",
+				"build",
+				"--plugin",
+				"gain-basic",
+				"--target",
+				"standalone"
+			],
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "new",
+				"close": true
+			},
+			"problemMatcher": "$rustc"
+		},
+		{
+			"label": "open-gain-basic-standalone",
+			"type": "process",
+			"command": "open",
+			"args": [
+				"${workspaceFolder}/target/wrac-examples/gain-basic/wrac/standalone/debug/WRAC Gain Basic Standalone.app"
+			],
+			"osx": {
+				"command": "open",
+				"args": [
+					"${workspaceFolder}/target/wrac-examples/gain-basic/wrac/standalone/debug/WRAC Gain Basic Standalone.app"
+				]
+			},
+			"windows": {
+				"command": "${workspaceFolder}/target/wrac-examples/gain-basic/wrac/standalone/debug/WRAC Gain Basic Standalone.exe",
+				"args": []
+			},
+			"linux": {
+				"command": "${workspaceFolder}/target/wrac-examples/gain-basic/wrac/standalone/debug/WRAC Gain Basic Standalone",
+				"args": []
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "new",
+				"close": true
+			}
+		},
+		{
+			"label": "build-and-open-gain-basic-standalone",
+			"dependsOrder": "sequence",
+			"dependsOn": [
+				"build-gain-basic-standalone",
+				"open-gain-basic-standalone"
+			],
+			"presentation": {
+				"reveal": "always",
+				"panel": "new",
+				"close": true
+			}
+		},
+		{
+			"label": "build-sine-synth-standalone",
+			"type": "process",
+			"command": "cargo",
+			"args": [
+				"xtask",
+				"build",
+				"--plugin",
+				"sine-synth",
+				"--target",
+				"standalone"
+			],
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "new",
+				"close": true
+			},
+			"problemMatcher": "$rustc"
+		},
+		{
+			"label": "open-sine-synth-standalone",
+			"type": "process",
+			"command": "open",
+			"args": [
+				"${workspaceFolder}/target/wrac-examples/sine-synth/wrac/standalone/debug/WRAC Sine Synth Standalone.app"
+			],
+			"osx": {
+				"command": "open",
+				"args": [
+					"${workspaceFolder}/target/wrac-examples/sine-synth/wrac/standalone/debug/WRAC Sine Synth Standalone.app"
+				]
+			},
+			"windows": {
+				"command": "${workspaceFolder}/target/wrac-examples/sine-synth/wrac/standalone/debug/WRAC Sine Synth Standalone.exe",
+				"args": []
+			},
+			"linux": {
+				"command": "${workspaceFolder}/target/wrac-examples/sine-synth/wrac/standalone/debug/WRAC Sine Synth Standalone",
+				"args": []
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "new",
+				"close": true
+			}
+		},
+		{
+			"label": "build-and-open-sine-synth-standalone",
+			"dependsOrder": "sequence",
+			"dependsOn": [
+				"build-sine-synth-standalone",
+				"open-sine-synth-standalone"
+			],
+			"presentation": {
+				"reveal": "always",
+				"panel": "new",
+				"close": true
+			}
+		}
+	]
+}
