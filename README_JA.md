@@ -34,4 +34,9 @@ cargo xtask build --plugin=gain-basic --target=vst3,au,standalone
 `--plugin` に渡す値は、`examples/` 直下の example directory 名です。
 たとえば `examples/sine-synth` は `--plugin=sine-synth` で指定します。
 
+## Standalone の起動
 
+```sh
+cargo xtask build --plugin=gain-basic --target=standalone
+cargo xtask launch --plugin=gain-basic
+```

@@ -24,24 +24,13 @@
 		{
 			"label": "open-gain-basic-standalone",
 			"type": "process",
-			"command": "open",
+			"command": "cargo",
 			"args": [
-				"${workspaceFolder}/target/wrac-examples/gain-basic/wrac/standalone/debug/WRAC Gain Basic Standalone.app"
+				"xtask",
+				"launch",
+				"--plugin",
+				"gain-basic"
 			],
-			"osx": {
-				"command": "open",
-				"args": [
-					"${workspaceFolder}/target/wrac-examples/gain-basic/wrac/standalone/debug/WRAC Gain Basic Standalone.app"
-				]
-			},
-			"windows": {
-				"command": "${workspaceFolder}/target/wrac-examples/gain-basic/wrac/standalone/debug/WRAC Gain Basic Standalone.exe",
-				"args": []
-			},
-			"linux": {
-				"command": "${workspaceFolder}/target/wrac-examples/gain-basic/wrac/standalone/debug/WRAC Gain Basic Standalone",
-				"args": []
-			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "new",
@@ -84,24 +73,13 @@
 		{
 			"label": "open-sine-synth-standalone",
 			"type": "process",
-			"command": "open",
+			"command": "cargo",
 			"args": [
-				"${workspaceFolder}/target/wrac-examples/sine-synth/wrac/standalone/debug/WRAC Sine Synth Standalone.app"
+				"xtask",
+				"launch",
+				"--plugin",
+				"sine-synth"
 			],
-			"osx": {
-				"command": "open",
-				"args": [
-					"${workspaceFolder}/target/wrac-examples/sine-synth/wrac/standalone/debug/WRAC Sine Synth Standalone.app"
-				]
-			},
-			"windows": {
-				"command": "${workspaceFolder}/target/wrac-examples/sine-synth/wrac/standalone/debug/WRAC Sine Synth Standalone.exe",
-				"args": []
-			},
-			"linux": {
-				"command": "${workspaceFolder}/target/wrac-examples/sine-synth/wrac/standalone/debug/WRAC Sine Synth Standalone",
-				"args": []
-			},
 			"presentation": {
 				"reveal": "always",
 				"panel": "new",

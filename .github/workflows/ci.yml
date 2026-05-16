@@ -72,6 +72,9 @@ jobs:
       - name: Check workspace
         run: cargo check --locked --workspace
 
+      - name: Run tests
+        run: cargo test --locked --workspace
+
   clap-build:
     name: CLAP build (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
@@ -125,6 +128,9 @@ jobs:
 
       - name: Build CLAP artifacts
         run: cargo xtask build --all --target=clap --release
+
+      - name: Validate CLAP artifacts
+        run: cargo xtask validate --all --target=clap --release
 
       - name: Verify CLAP artifacts
         run: ${{ matrix.verify }}

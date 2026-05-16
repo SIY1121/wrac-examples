@@ -389,6 +389,34 @@ pub(crate) fn install(
     install_plugin_targets(ctx, profile, scope, &targets)
 }
 
+pub(crate) fn launch(ctx: &Context, profile: BuildProfile) -> Result<()> {
+    let artifact = ctx.standalone_artifact(profile);
+    if !artifact.exists() {
+        let plugin = ctx
+            .plugin_root
+            .file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or("<plugin>");
+        let release = if profile == BuildProfile::Release {
+            " --release"
+        } else {
+            ""
+        };
+        return Err(format!(
+            "standalone artifact not found: {}\nRun `cargo xtask build --plugin={plugin} --target=standalone{release}` first.",
+            artifact.display()
+        )
+        .into());
+    }
+
+    println!("Launching standalone artifact: {}", artifact.display());
+    match ctx.platform {
+        Platform::Macos => run(Command::new("open").arg("-W").arg("-n").arg(&artifact))?,
+        Platform::Windows | Platform::Linux => run(&mut Command::new(&artifact))?,
+    }
+    Ok(())
+}
+
 fn install_plugin_targets(
     ctx: &Context,
     profile: BuildProfile,

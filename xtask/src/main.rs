@@ -11,7 +11,7 @@ mod targets;
 mod util;
 
 use cli::{Cli, Commands};
-use commands::{build, clean, install, uninstall, validate};
+use commands::{build, clean, install, launch, uninstall, validate};
 use context::{Context, available_plugins};
 use profile::BuildProfile;
 
@@ -53,8 +53,12 @@ fn main() -> Result<()> {
                 validate(&ctx, BuildProfile::from_release(args.release), &args.target)?;
             }
         }
-        Commands::Clean => {
-            for plugin in available_plugins()? {
+        Commands::Launch(args) => {
+            let ctx = Context::new(&args.plugin)?;
+            launch(&ctx, BuildProfile::from_release(args.release))?;
+        }
+        Commands::Clean(args) => {
+            for plugin in selected_plugins(args.plugin.as_deref(), args.all)? {
                 let ctx = Context::new(&plugin)?;
                 clean(&ctx)?;
             }
@@ -71,9 +75,10 @@ fn selected_plugins(plugin: Option<&str>, all: bool) -> Result<Vec<String>> {
         }
         return available_plugins();
     }
-    // Default to the smallest example so `cargo xtask build --target=clap` remains useful
-    // when someone is just exploring the repository for the first time.
-    Ok(vec![plugin.unwrap_or("gain-basic").to_string()])
+    if let Some(plugin) = plugin {
+        return Ok(vec![plugin.to_string()]);
+    }
+    Err("--plugin <PLUGIN> or --all is required".into())
 }
 
 fn args_for_build(args: &cli::BuildArgs) -> cli::BuildArgs {
