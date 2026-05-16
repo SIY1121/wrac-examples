@@ -15,14 +15,14 @@ Default targets by platform:
   Linux:   clap, vst3, standalone
 
 Examples:
-  cargo xtask build
   cargo xtask build --plugin=sine-synth
   cargo xtask build --all --target=clap
-  cargo xtask build --release
-  cargo xtask build --target=vst3
-  cargo xtask build --target=au,standalone --release
+  cargo xtask build --plugin=gain-basic --release
+  cargo xtask build --plugin=gain-basic --target=vst3
+  cargo xtask build --plugin=gain-basic --target=au,standalone --release
 
 Notes:
+  Select examples explicitly with --plugin or --all.
   Run `cargo xtask install` after building to install plugin artifacts.
   Run `cargo xtask validate` after building to validate CLAP/VST3/AU artifacts.
   VST3/AU/standalone targets require clap-wrapper dependencies.";
@@ -37,12 +37,13 @@ Default targets by platform:
   Linux:   clap, vst3
 
 Examples:
-  cargo xtask install
-  cargo xtask install --release
-  cargo xtask install --scope=system
-  cargo xtask install --target=clap,vst3
+  cargo xtask install --plugin=gain-basic
+  cargo xtask install --all --release
+  cargo xtask install --plugin=sine-synth --scope=system
+  cargo xtask install --plugin=gain-basic --target=clap,vst3
 
 Notes:
+  Select examples explicitly with --plugin or --all.
   install copies previously built plugin artifacts.
   --scope defaults to user. Use --scope=system for hosts that only scan system-wide plugin folders.
   standalone is not a plugin format and cannot be installed with this command.";
@@ -57,13 +58,14 @@ Default targets by platform:
   Linux:   clap, vst3
 
 Examples:
-  cargo xtask uninstall
-  cargo xtask uninstall --target=vst3
-  cargo xtask uninstall --scope=user
-  cargo xtask uninstall --scope=system
-  cargo xtask uninstall --dry-run
+  cargo xtask uninstall --plugin=gain-basic
+  cargo xtask uninstall --all --target=vst3
+  cargo xtask uninstall --plugin=sine-synth --scope=user
+  cargo xtask uninstall --plugin=sine-synth --scope=system
+  cargo xtask uninstall --plugin=gain-basic --dry-run
 
 Notes:
+  Select examples explicitly with --plugin or --all.
   --scope defaults to all and removes both user-local and system-wide plugin artifacts.";
 
 const VALIDATE_AFTER_HELP: &str = "\
@@ -76,16 +78,27 @@ Default targets by platform:
   Linux:   clap, vst3
 
 Examples:
-  cargo xtask validate
-  cargo xtask validate --release
-  cargo xtask validate --target=clap
-  cargo xtask validate --target=vst3
+  cargo xtask validate --plugin=gain-basic
+  cargo xtask validate --all --release
+  cargo xtask validate --all --target=clap
+  cargo xtask validate --plugin=sine-synth --target=vst3
 
 Notes:
+  Select examples explicitly with --plugin or --all.
   CLAP validation downloads clap-validator 0.3.2 into target/tools if needed.
   VST3 validation uses the VST3 validator.
   AU validation is available only on macOS and installs the built AU before running auval.
   AU validation fails if the same AU bundle exists under /Library/Audio/Plug-Ins/Components.";
+
+const LAUNCH_AFTER_HELP: &str = "\
+Examples:
+  cargo xtask launch --plugin=gain-basic
+  cargo xtask launch --plugin=sine-synth
+  cargo xtask launch --plugin=gain-basic --release
+
+Notes:
+  launch starts a previously built standalone artifact.
+  Run `cargo xtask build --plugin=<plugin> --target=standalone` first.";
 
 #[derive(Debug, Parser)]
 #[command(
@@ -120,19 +133,25 @@ pub(crate) enum Commands {
         after_help = VALIDATE_AFTER_HELP
     )]
     Validate(ValidateArgs),
+    #[command(
+        about = "Launch a previously built standalone artifact.",
+        after_help = LAUNCH_AFTER_HELP
+    )]
+    Launch(LaunchArgs),
     #[command(about = "Remove generated build artifacts managed by xtask.")]
-    Clean,
+    Clean(CleanArgs),
 }
 
 #[derive(Debug, Args)]
 pub(crate) struct BuildArgs {
     #[arg(
+        short_alias = 'p',
         long,
         help = "Example directory name under examples/ to build, such as sine-synth."
     )]
     pub(crate) plugin: Option<String>,
 
-    #[arg(long, help = "Build every example plugin.")]
+    #[arg(short_alias = 'a', long, help = "Build every example plugin.")]
     pub(crate) all: bool,
 
     #[arg(long, help = "Build with the release profile.")]
@@ -142,6 +161,7 @@ pub(crate) struct BuildArgs {
     pub(crate) clean: bool,
 
     #[arg(
+        short_alias = 't',
         long,
         value_enum,
         value_delimiter = ',',
@@ -155,18 +175,20 @@ pub(crate) struct BuildArgs {
 #[derive(Debug, Args)]
 pub(crate) struct InstallArgs {
     #[arg(
+        short_alias = 'p',
         long,
         help = "Example directory name under examples/ to install, such as sine-synth."
     )]
     pub(crate) plugin: Option<String>,
 
-    #[arg(long, help = "Install every example plugin.")]
+    #[arg(short_alias = 'a', long, help = "Install every example plugin.")]
     pub(crate) all: bool,
 
     #[arg(long, help = "Install release artifacts.")]
     pub(crate) release: bool,
 
     #[arg(
+        short_alias = 't',
         long,
         value_enum,
         default_value_t = InstallScope::User,
@@ -201,15 +223,17 @@ pub(crate) enum UninstallScope {
 #[derive(Debug, Args)]
 pub(crate) struct UninstallArgs {
     #[arg(
+        short_alias = 'p',
         long,
         help = "Example directory name under examples/ to uninstall, such as sine-synth."
     )]
     pub(crate) plugin: Option<String>,
 
-    #[arg(long, help = "Uninstall every example plugin.")]
+    #[arg(short_alias = 'a', long, help = "Uninstall every example plugin.")]
     pub(crate) all: bool,
 
     #[arg(
+        short_alias = 't',
         long,
         value_enum,
         default_value_t = UninstallScope::All,
@@ -237,18 +261,20 @@ pub(crate) struct UninstallArgs {
 #[derive(Debug, Args)]
 pub(crate) struct ValidateArgs {
     #[arg(
+        short_alias = 'p',
         long,
         help = "Example directory name under examples/ to validate, such as sine-synth."
     )]
     pub(crate) plugin: Option<String>,
 
-    #[arg(long, help = "Validate every example plugin.")]
+    #[arg(short_alias = 'a', long, help = "Validate every example plugin.")]
     pub(crate) all: bool,
 
     #[arg(long, help = "Validate release artifacts.")]
     pub(crate) release: bool,
 
     #[arg(
+        short_alias = 't',
         long,
         value_enum,
         value_delimiter = ',',
@@ -257,4 +283,30 @@ pub(crate) struct ValidateArgs {
         long_help = "Targets to validate, comma-separated. Supported values are clap, vst3, and au. Defaults to every validation target supported by the current OS."
     )]
     pub(crate) target: Vec<ValidateTarget>,
+}
+
+#[derive(Debug, Args)]
+pub(crate) struct LaunchArgs {
+    #[arg(
+        short_alias = 'p',
+        long,
+        help = "Example directory name under examples/ to launch, such as sine-synth."
+    )]
+    pub(crate) plugin: String,
+
+    #[arg(long, help = "Launch release artifact.")]
+    pub(crate) release: bool,
+}
+
+#[derive(Debug, Args)]
+pub(crate) struct CleanArgs {
+    #[arg(
+        short_alias = 'p',
+        long,
+        help = "Example directory name under examples/ to clean, such as sine-synth."
+    )]
+    pub(crate) plugin: Option<String>,
+
+    #[arg(short_alias = 'a', long, help = "Clean every example plugin.")]
+    pub(crate) all: bool,
 }

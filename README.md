@@ -33,3 +33,10 @@ cargo xtask build --plugin=gain-basic --target=vst3,au,standalone
 
 The value passed to `--plugin` is the example directory name under `examples/`.
 For example, `examples/sine-synth` is selected with `--plugin=sine-synth`.
+
+## Launch Standalone
+
+```sh
+cargo xtask build --plugin=gain-basic --target=standalone
+cargo xtask launch --plugin=gain-basic
+```

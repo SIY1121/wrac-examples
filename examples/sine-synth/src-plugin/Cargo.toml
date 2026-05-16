@@ -12,13 +12,13 @@ build = "build.rs"
 # wrapper arguments, AUv2 codes, WebView data dirs, and log names all move
 # together when this template is renamed.
 [package.metadata.wrac]
-plugin_id = "com.novonotes.examples.wrac-sine-synth"
+plugin_id = "com.yourcompany.examples.wrac-sine-synth"
 plugin_name = "WRAC Sine Synth"
-company_name = "NOVO NOTES"
+company_name = "Your Company"
 # AUv2 codes must be exactly 4 ASCII bytes. Instruments usually use "aumu".
 auv2_type = "aumu"
 auv2_subtype = "WSSn"
-auv2_manufacturer_code = "NvNt"
+auv2_manufacturer_code = "YCmp"
 standalone_name = "WRAC Sine Synth Standalone"
 
 [lib]

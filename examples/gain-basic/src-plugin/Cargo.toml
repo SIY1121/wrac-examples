@@ -12,13 +12,13 @@ build = "build.rs"
 # wrapper arguments, AUv2 codes, WebView data dirs, and log names all move
 # together when this template is renamed.
 [package.metadata.wrac]
-plugin_id = "com.novonotes.examples.wrac-gain-basic"
+plugin_id = "com.yourcompany.examples.wrac-gain-basic"
 plugin_name = "WRAC Gain Basic"
-company_name = "NOVO NOTES"
+company_name = "Your Company"
 # AUv2 codes must be exactly 4 ASCII bytes. Audio effects usually use "aufx".
 auv2_type = "aufx"
 auv2_subtype = "WgBn"
-auv2_manufacturer_code = "NvNt"
+auv2_manufacturer_code = "YCmp"
 standalone_name = "WRAC Gain Basic Standalone"
 
 [lib]
