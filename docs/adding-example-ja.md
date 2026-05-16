@@ -1,5 +1,8 @@
 # Example 追加メモ
 
+This document is intended for maintainers.
+これはメンテナー向けドキュメントです。
+
 新しい example は、近い既存 example をコピーして作る。最小 audio effect なら
 `gain-basic`、instrument / MIDI 入力なら `sine-synth` を起点にする。
 
