@@ -23,26 +23,40 @@
           ></button>
         </div>
         <section class="page is-active" id="page-controls">
-          <div class="meter">
-            <button class="value" id="gain-db" type="button">0.0 dB</button>
-            <input
-              class="value value-input"
-              id="gain-input"
-              type="text"
-              hidden
-            />
+          <div class="synth-surface">
+            <div class="gain-strip">
+              <button class="value" id="gain-db" type="button">0.0 dB</button>
+              <input
+                class="value value-input"
+                id="gain-input"
+                type="text"
+                hidden
+              />
+              <input
+                class="gain-slider"
+                id="gain-slider"
+                type="range"
+                min="0"
+                max="2"
+                step="0.001"
+                aria-label="Output level"
+              />
+            </div>
+            <div class="keyboard" aria-label="One octave keyboard">
+              <button class="key white" type="button" data-note="C">C</button>
+              <button class="key black cs" type="button" data-note="C#"></button>
+              <button class="key white" type="button" data-note="D">D</button>
+              <button class="key black ds" type="button" data-note="D#"></button>
+              <button class="key white" type="button" data-note="E">E</button>
+              <button class="key white" type="button" data-note="F">F</button>
+              <button class="key black fs" type="button" data-note="F#"></button>
+              <button class="key white" type="button" data-note="G">G</button>
+              <button class="key black gs" type="button" data-note="G#"></button>
+              <button class="key white" type="button" data-note="A">A</button>
+              <button class="key black as" type="button" data-note="A#"></button>
+              <button class="key white" type="button" data-note="B">B</button>
+            </div>
           </div>
-          <section class="knob-zone">
-            <button
-              class="knob"
-              id="gain-knob"
-              type="button"
-              aria-label="Gain knob"
-            >
-              <div class="knob-track"></div>
-              <div class="knob-indicator" id="knob-indicator"></div>
-            </button>
-          </section>
         </section>
         <section class="page about-page" id="page-about" hidden>
           <h1 class="about-title" id="about-title"></h1>

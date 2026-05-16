@@ -4,8 +4,8 @@ use std::f64::consts::TAU;
 use std::sync::Arc;
 
 use wrac_clap_adapter::{
-    AudioPairedChannels, AudioPortChannels, AudioProcessBuffer, InputEvent, NoteEvent,
-    PluginResult, ProcessContext, ProcessStatus, Processor,
+    AudioPairedChannels, AudioPortChannels, AudioProcessBuffer, InputEvent, PluginResult,
+    ProcessContext, ProcessStatus, Processor,
 };
 
 use crate::plugin::{PARAM_BYPASS_ID, PARAM_GAIN_ID, host_value_to_gain};
@@ -41,6 +41,7 @@ pub(crate) struct WracGainAudioProcessor {
     sample_rate: f64,
     voices: [Voice; MAX_VOICES],
     next_voice: usize,
+    gui_note_mask: u16,
 }
 
 impl WracGainAudioProcessor {
@@ -52,6 +53,7 @@ impl WracGainAudioProcessor {
             sample_rate: sample_rate.max(1.0),
             voices: [Voice::default(); MAX_VOICES],
             next_voice: 0,
+            gui_note_mask: 0,
         }
     }
 }
@@ -76,6 +78,7 @@ impl WracGainAudioProcessor {
         let mut bypass = self.shared.bypass();
         let mut segment_start = 0;
         let frames_count = context.frames_count as usize;
+        self.sync_gui_notes();
 
         for event in context.events.input.iter() {
             // Events are timestamped within the current block. Render the audio before
@@ -93,12 +96,14 @@ impl WracGainAudioProcessor {
             }
 
             match event {
-                InputEvent::NoteOn(note) if note.velocity > 0.0 => self.note_on(note),
+                InputEvent::NoteOn(note) if note.velocity > 0.0 => {
+                    self.note_on_key(note.key, note.velocity)
+                }
                 // Some hosts encode note-off as note-on with zero velocity; handle both
                 // shapes and choke as "stop this key" for a compact first synth.
                 InputEvent::NoteOn(note)
                 | InputEvent::NoteOff(note)
-                | InputEvent::NoteChoke(note) => self.note_off(note),
+                | InputEvent::NoteChoke(note) => self.note_off_key(note.key),
                 InputEvent::ParamValue(event) if event.parameter_id == PARAM_GAIN_ID => {
                     gain = self
                         .shared
@@ -128,7 +133,28 @@ impl WracGainAudioProcessor {
         Ok(ProcessStatus::ContinueIfNotQuiet)
     }
 
-    fn note_on(&mut self, event: NoteEvent) {
+    fn sync_gui_notes(&mut self) {
+        let next_mask = self.shared.gui_note_mask();
+        let changed = self.gui_note_mask ^ next_mask;
+        if changed == 0 {
+            return;
+        }
+        for semitone in 0..12 {
+            let bit = 1_u16 << semitone;
+            if changed & bit == 0 {
+                continue;
+            }
+            let key = 60 + semitone as i16;
+            if next_mask & bit == 0 {
+                self.note_off_key(key);
+            } else {
+                self.note_on_key(key, 0.85);
+            }
+        }
+        self.gui_note_mask = next_mask;
+    }
+
+    fn note_on_key(&mut self, key: i16, velocity: f64) {
         let slot = self
             .voices
             .iter()
@@ -143,16 +169,16 @@ impl WracGainAudioProcessor {
             });
         self.voices[slot] = Voice {
             active: true,
-            key: event.key,
+            key,
             phase: 0.0,
-            frequency_hz: key_to_frequency_hz(event.key),
-            velocity: event.velocity.clamp(0.0, 1.0),
+            frequency_hz: key_to_frequency_hz(key),
+            velocity: velocity.clamp(0.0, 1.0),
         };
     }
 
-    fn note_off(&mut self, event: NoteEvent) {
+    fn note_off_key(&mut self, key: i16) {
         for voice in &mut self.voices {
-            if voice.active && voice.key == event.key {
+            if voice.active && voice.key == key {
                 voice.active = false;
             }
         }

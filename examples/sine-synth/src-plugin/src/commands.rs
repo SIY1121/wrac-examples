@@ -164,6 +164,16 @@ pub(crate) fn register_commands(
         });
     }
 
+    {
+        let shared = shared.clone();
+        command_handler.register_sync("set_gui_note", move |ctx| {
+            let semitone = ctx.arg::<u8>("semitone").map_err(|e| e.to_string())?;
+            let active = ctx.arg::<bool>("active").map_err(|e| e.to_string())?;
+            shared.set_gui_note_active(semitone, active);
+            Ok::<_, String>(json!({ "ok": true }))
+        });
+    }
+
     // Starts a subscription that receives parameter changes.
     // `channel` is a callback channel created on the JS side; the plugin pushes value
     // changes into it. The returned `subscriptionId` identifies the subscription so the

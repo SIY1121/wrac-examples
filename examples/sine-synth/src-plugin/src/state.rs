@@ -4,7 +4,7 @@
 //! needed to prevent inconsistency. Delivering changes to the GUI and notifying the host
 //! of edits are the responsibility of `gui.rs` and `commands.rs`.
 
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU16, Ordering};
 
 use atomic_float::AtomicF32;
 use parking_lot::RwLock;
@@ -100,6 +100,7 @@ pub(crate) struct SharedState {
     // Linear amplitude.
     gain: AtomicF32,
     bypass: AtomicBool,
+    gui_note_mask: AtomicU16,
 }
 
 impl SharedState {
@@ -107,6 +108,7 @@ impl SharedState {
         Self {
             gain: AtomicF32::new(DEFAULT_GAIN),
             bypass: AtomicBool::new(false),
+            gui_note_mask: AtomicU16::new(0),
         }
     }
 
@@ -116,6 +118,22 @@ impl SharedState {
 
     pub(crate) fn bypass(&self) -> bool {
         self.bypass.load(Ordering::Acquire)
+    }
+
+    pub(crate) fn gui_note_mask(&self) -> u16 {
+        self.gui_note_mask.load(Ordering::Acquire)
+    }
+
+    pub(crate) fn set_gui_note_active(&self, semitone: u8, active: bool) {
+        if semitone >= 12 {
+            return;
+        }
+        let bit = 1_u16 << semitone;
+        if active {
+            self.gui_note_mask.fetch_or(bit, Ordering::AcqRel);
+        } else {
+            self.gui_note_mask.fetch_and(!bit, Ordering::AcqRel);
+        }
     }
 
     pub(crate) fn snapshot_parameters(&self) -> ParameterStateSnapshot {

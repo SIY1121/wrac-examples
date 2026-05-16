@@ -1,5 +1,5 @@
 /**
- * WRAC Gain Plugin — Frontend (JavaScript side)
+ * WRAC Sine Synth Plugin — Frontend (JavaScript side)
  *
  * The GUI of a wxp plugin is implemented as a regular web application.
  * Communication with the Rust side uses invoke() and Channel
@@ -54,13 +54,11 @@ const PARAM_GAIN_ID = 1;
 // Gain range. Must match MIN_GAIN / MAX_GAIN on the Rust side.
 const MIN_GAIN = 0;
 const MAX_GAIN = 2;
-// Knob rotation range (-135° to +135°, giving 270° of travel)
-const MIN_ANGLE = -135;
-const MAX_ANGLE = 135;
 
 // --- DOM element references ---
 const dbLabel = document.querySelector<HTMLButtonElement>("#gain-db");
 const gainInput = document.querySelector<HTMLInputElement>("#gain-input");
+const gainSlider = document.querySelector<HTMLInputElement>("#gain-slider");
 const headerAction =
   document.querySelector<HTMLButtonElement>("#header-action");
 const pluginName = document.querySelector<HTMLButtonElement>("#plugin-name");
@@ -72,8 +70,7 @@ const aboutCompanyName = document.querySelector<HTMLElement>(
   "#about-company-name",
 );
 const aboutBuild = document.querySelector<HTMLElement>("#about-build");
-const knob = document.querySelector<HTMLButtonElement>("#gain-knob");
-const indicator = document.querySelector<HTMLDivElement>("#knob-indicator");
+const keys = Array.from(document.querySelectorAll<HTMLButtonElement>(".key"));
 const resizeGrip = document.querySelector<HTMLButtonElement>("#resize-grip");
 const pageControls = document.querySelector<HTMLElement>("#page-controls");
 const pageAbout = document.querySelector<HTMLElement>("#page-about");
@@ -81,6 +78,7 @@ const pageAbout = document.querySelector<HTMLElement>("#page-about");
 if (
   !dbLabel ||
   !gainInput ||
+  !gainSlider ||
   !headerAction ||
   !pluginName ||
   !aboutTitle ||
@@ -88,8 +86,7 @@ if (
   !aboutVersion ||
   !aboutCompanyName ||
   !aboutBuild ||
-  !knob ||
-  !indicator ||
+  keys.length === 0 ||
   !resizeGrip ||
   !pageControls ||
   !pageAbout
@@ -110,10 +107,6 @@ document.title = __WRAC_PLUGIN_METADATA__.pluginName;
 
 // --- State ---
 let gain = 1;
-let dragging = false;
-let dragStartX = 0;
-let dragStartY = 0;
-let dragStartGain = gain;
 /** Whether a gesture (drag interaction) is in progress. Prevents double-sending. */
 let gestureActive = false;
 let parameterSubscriptionId: number | undefined;
@@ -233,12 +226,6 @@ function clamp(value: number): number {
   return Math.min(MAX_GAIN, Math.max(MIN_GAIN, value));
 }
 
-/** Converts a linear gain value to a knob rotation angle */
-function gainToAngle(value: number): number {
-  const normalized = (value - MIN_GAIN) / (MAX_GAIN - MIN_GAIN);
-  return MIN_ANGLE + normalized * (MAX_ANGLE - MIN_ANGLE);
-}
-
 /** Receives a parameter state and updates the matching UI display */
 function render(state: ParameterState): void {
   if (state.parameterId !== PARAM_GAIN_ID) {
@@ -246,8 +233,9 @@ function render(state: ParameterState): void {
   }
   gain = clamp(state.value);
   dbLabel.textContent = state.text;
-  const angle = gainToAngle(gain);
-  indicator.style.transform = `rotate(${angle}deg)`;
+  gainSlider.value = String(gain);
+  const normalized = (gain - MIN_GAIN) / (MAX_GAIN - MIN_GAIN);
+  gainSlider.style.setProperty("--value", `${normalized * 100}%`);
 }
 
 function renderEditorPage(page: EditorPage): void {
@@ -355,46 +343,27 @@ function cancelTextInput(): void {
 }
 
 // -----------------------------------------------------------------------
-// Knob drag interaction
+// Gain slider interaction
 // -----------------------------------------------------------------------
 // Uses the Pointer Events API to support both mouse and touch.
 
-knob.addEventListener("pointerdown", (event) => {
-  dragging = true;
-  dragStartX = event.clientX;
-  dragStartY = event.clientY;
-  dragStartGain = gain;
-  // setPointerCapture: continue receiving pointermove/pointerup
-  // even when the cursor moves outside the button.
-  knob.setPointerCapture(event.pointerId);
+gainSlider.addEventListener("pointerdown", () => {
   beginGesture();
 });
 
-knob.addEventListener("pointermove", (event) => {
-  if (!dragging) {
-    return;
-  }
-  // Dragging right or upward increases gain. 180px covers the full range.
-  const deltaX = event.clientX - dragStartX;
-  const deltaY = dragStartY - event.clientY;
-  const delta = (deltaX + deltaY) / 180;
-  applyGain(dragStartGain + delta);
+gainSlider.addEventListener("input", () => {
+  applyGain(Number(gainSlider.value));
 });
 
 const finishDrag = (event: PointerEvent) => {
-  if (!dragging) {
-    return;
-  }
-  dragging = false;
-  knob.releasePointerCapture(event.pointerId);
   endGesture();
   restoreHostFocusIfNeeded(event.target);
 };
 
-knob.addEventListener("pointerup", finishDrag);
-knob.addEventListener("pointercancel", finishDrag);
+gainSlider.addEventListener("pointerup", finishDrag);
+gainSlider.addEventListener("pointercancel", finishDrag);
 
-knob.addEventListener("dblclick", (event) => {
+gainSlider.addEventListener("dblclick", (event) => {
   event.preventDefault();
   renderResponse(
     invoke<ParameterState>("reset_parameter_to_default", {
@@ -407,20 +376,20 @@ knob.addEventListener("dblclick", (event) => {
 // -----------------------------------------------------------------------
 // Mouse wheel adjustment
 // -----------------------------------------------------------------------
-knob.addEventListener("wheel", (event) => {
+gainSlider.addEventListener("wheel", (event) => {
   event.preventDefault();
   beginGesture();
   applyGain(gain + event.deltaY * 0.0015);
   // Wheel events are continuous but have no clear "end", so a 120ms timer
   // is used to end the gesture after the last wheel event.
-  window.clearTimeout((knob as unknown as { wheelTimer?: number }).wheelTimer);
-  (knob as unknown as { wheelTimer?: number }).wheelTimer = window.setTimeout(
-    () => {
+  window.clearTimeout(
+    (gainSlider as unknown as { wheelTimer?: number }).wheelTimer,
+  );
+  (gainSlider as unknown as { wheelTimer?: number }).wheelTimer =
+    window.setTimeout(() => {
       endGesture();
       restoreHostFocusIfNeeded(event.target);
-    },
-    120,
-  );
+    }, 120);
 });
 
 dbLabel.addEventListener("pointerdown", (event) => {
@@ -448,6 +417,104 @@ gainInput.addEventListener("keydown", (event) => {
   }
 });
 gainInput.addEventListener("pointerdown", (event) => event.stopPropagation());
+
+const keyboardMap = new Map([
+  ["a", "C"],
+  ["w", "C#"],
+  ["s", "D"],
+  ["e", "D#"],
+  ["d", "E"],
+  ["f", "F"],
+  ["t", "F#"],
+  ["g", "G"],
+  ["y", "G#"],
+  ["h", "A"],
+  ["u", "A#"],
+  ["j", "B"],
+]);
+const noteSemitones = new Map([
+  ["C", 0],
+  ["C#", 1],
+  ["D", 2],
+  ["D#", 3],
+  ["E", 4],
+  ["F", 5],
+  ["F#", 6],
+  ["G", 7],
+  ["G#", 8],
+  ["A", 9],
+  ["A#", 10],
+  ["B", 11],
+]);
+const activeNotes = new Set<string>();
+
+function setNoteActive(note: string, active: boolean): void {
+  const wasActive = activeNotes.has(note);
+  if (active) {
+    activeNotes.add(note);
+  } else {
+    activeNotes.delete(note);
+  }
+  if (wasActive === active) {
+    return;
+  }
+  keys
+    .filter((key) => key.dataset.note === note)
+    .forEach((key) => key.classList.toggle("is-active", active));
+  const semitone = noteSemitones.get(note);
+  if (semitone === undefined) {
+    return;
+  }
+  void invoke("set_gui_note", { semitone, active });
+}
+
+keys.forEach((key) => {
+  const note = key.dataset.note;
+  if (!note) {
+    return;
+  }
+  key.addEventListener("pointerdown", (event) => {
+    key.setPointerCapture(event.pointerId);
+    setNoteActive(note, true);
+  });
+  const release = (event: PointerEvent) => {
+    key.releasePointerCapture(event.pointerId);
+    setNoteActive(note, false);
+    restoreHostFocusIfNeeded(event.target);
+  };
+  key.addEventListener("pointerup", release);
+  key.addEventListener("pointercancel", release);
+});
+
+window.addEventListener("keydown", (event) => {
+  if (isEditableElement(event.target)) {
+    return;
+  }
+  const note = keyboardMap.get(event.key.toLowerCase());
+  if (!note || event.repeat) {
+    return;
+  }
+  event.preventDefault();
+  setNoteActive(note, true);
+});
+
+window.addEventListener("keyup", (event) => {
+  if (isEditableElement(event.target)) {
+    return;
+  }
+  const note = keyboardMap.get(event.key.toLowerCase());
+  if (!note) {
+    return;
+  }
+  event.preventDefault();
+  setNoteActive(note, false);
+});
+
+window.addEventListener("blur", () => {
+  for (const note of Array.from(activeNotes)) {
+    setNoteActive(note, false);
+  }
+});
 
 // About is a detail view of plugin identity rather than a settings screen, so the plugin name
 // itself is used as the entry point/toggle instead of a permanent tab, to avoid an extra

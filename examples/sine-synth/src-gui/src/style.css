@@ -34,7 +34,7 @@ body {
 }
 
 .panel {
-  width: min(100%, 300px);
+  width: min(100%, 460px);
   padding: 22px 22px 20px;
   border-radius: 20px;
   background:
@@ -111,10 +111,17 @@ body {
   min-height: 278px;
 }
 
-.meter {
-  margin-top: 32px;
+.synth-surface {
+  margin-top: 34px;
   display: grid;
-  place-items: center;
+  gap: 28px;
+}
+
+.gain-strip {
+  display: grid;
+  grid-template-columns: minmax(92px, 118px) 1fr;
+  align-items: center;
+  gap: 18px;
 }
 
 .value {
@@ -122,77 +129,130 @@ body {
   border: 0;
   background: transparent;
   color: #f7f1e7;
-  font-size: 40px;
+  font-size: 25px;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  text-align: center;
+  text-align: left;
   cursor: pointer;
 }
 
 .value-input {
   outline: 1px solid rgba(255, 184, 92, 0.45);
   border-radius: 6px;
-  padding: 2px 8px;
+  padding: 4px 8px;
   background: rgba(0, 0, 0, 0.24);
 }
 
-.knob-zone {
-  margin-top: 16px;
-  display: grid;
-  place-items: center;
-}
-
-.knob {
-  position: relative;
-  width: 208px;
-  height: 208px;
-  border: 0;
-  border-radius: 50%;
-  background:
-    radial-gradient(
-      circle at 35% 30%,
-      rgba(255, 255, 255, 0.22),
-      transparent 24%
-    ),
-    radial-gradient(circle at 50% 55%, #303a46, #1c242d 66%, #0a0d10 100%);
-  box-shadow:
-    inset 0 3px 14px rgba(255, 255, 255, 0.08),
-    inset 0 -20px 30px rgba(0, 0, 0, 0.32),
-    0 30px 40px rgba(0, 0, 0, 0.32);
-  cursor: ns-resize;
+.gain-slider {
+  --value: 50%;
+  width: 100%;
+  height: 28px;
+  margin: 0;
+  appearance: none;
+  background: transparent;
+  cursor: ew-resize;
   touch-action: none;
 }
 
-.knob::before {
-  content: "";
-  position: absolute;
-  inset: 12px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.knob-track {
-  position: absolute;
-  inset: 10px;
-  border-radius: 50%;
-}
-
-.knob-track {
-  border: 12px solid rgba(255, 255, 255, 0.06);
-}
-
-.knob-indicator {
-  position: absolute;
-  left: 50%;
-  top: 17px;
-  width: 6px;
-  height: 60px;
-  margin-left: -3px;
+.gain-slider::-webkit-slider-runnable-track {
+  height: 8px;
   border-radius: 999px;
-  background: linear-gradient(180deg, #fff6e5, #ffb85c);
-  box-shadow: 0 0 18px rgba(255, 184, 92, 0.28);
-  transform-origin: 50% 87px;
+  background:
+    linear-gradient(90deg, #ffb85c 0 var(--value), transparent 0),
+    rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.34);
 }
+
+.gain-slider::-webkit-slider-thumb {
+  width: 24px;
+  height: 24px;
+  margin-top: -8px;
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 50%;
+  background: linear-gradient(180deg, #fff6e5, #d9b985);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.34);
+}
+
+.keyboard {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  height: 148px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow:
+    0 18px 32px rgba(0, 0, 0, 0.32),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.key {
+  min-width: 0;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.key.white {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 12px;
+  border-right: 1px solid rgba(13, 18, 24, 0.35);
+  background: linear-gradient(180deg, #fff9ed, #d6d0c5);
+  color: rgba(13, 18, 24, 0.48);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.key.white:last-child {
+  border-right: 0;
+}
+
+.key.black {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  width: 9.5%;
+  height: 58%;
+  border-radius: 0 0 5px 5px;
+  background: linear-gradient(180deg, #1a2129, #05070a);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.42);
+}
+
+.key.cs {
+  left: 9.8%;
+}
+
+.key.ds {
+  left: 24.1%;
+}
+
+.key.fs {
+  left: 52.7%;
+}
+
+.key.gs {
+  left: 67%;
+}
+
+.key.as {
+  left: 81.3%;
+}
+
+.key.is-active {
+  filter: brightness(1.18) saturate(1.12);
+}
+
+.key.white.is-active {
+  background: linear-gradient(180deg, #fff0ca, #ffb85c);
+}
+
+.key.black.is-active {
+  background: linear-gradient(180deg, #3b4652, #d9b985);
+}
+
 
 .resize-grip {
   position: absolute;
