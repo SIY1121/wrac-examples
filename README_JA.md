@@ -2,7 +2,7 @@
 
 [WRAC Plugin Template](https://github.com/novonotes/wrac-plugin-template) の補助的なサンプルプラグイン集です。
 
-このリポジトリは `wrac-plugin-template` の companion repository です。
+このリポジトリは `wrac-plugin-template` とあわせて参照する補助リポジトリです。
 WRAC スタックによるオーディオプラグイン開発について知りたい場合、まず `wrac-plugin-template` を参照してください。
 このリポジトリは、追加の実装例を確認したい場合に使います。
 
