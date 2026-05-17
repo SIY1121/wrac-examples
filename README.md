@@ -1,6 +1,10 @@
 # wrac-examples
 
-Example audio plugins built with the WRAC stack
+Supplemental example plugins for [WRAC Plugin Template](https://github.com/novonotes/wrac-plugin-template).
+
+This repository is a companion to `wrac-plugin-template`.
+If you want to learn about audio plugin development with the WRAC stack, start with `wrac-plugin-template`.
+Use this repository when you want to inspect additional example implementations.
 
 > 日本語版: [README_JA.md](README_JA.md)
 
@@ -41,8 +45,9 @@ cargo xtask build --plugin=gain-basic --target=standalone
 cargo xtask launch --plugin=gain-basic
 ```
 
-## Reference
+## Main Repository
 
-These examples are built from [wrac-plugin-template](https://github.com/novonotes/wrac-plugin-template).
+The main project is [wrac-plugin-template](https://github.com/novonotes/wrac-plugin-template). It contains the template, setup guide, build workflow, and support channels.
 
-This repository does not use its own issues or discussions. Please use the [wrac-plugin-template issues](https://github.com/novonotes/wrac-plugin-template/issues) or [discussions](https://github.com/novonotes/wrac-plugin-template/discussions) for questions, feedback, and compatibility reports.
+This repository only contains supplemental examples built from that template.
+Please use the [wrac-plugin-template issues](https://github.com/novonotes/wrac-plugin-template/issues) or [discussions](https://github.com/novonotes/wrac-plugin-template/discussions) for questions, feedback, and compatibility reports.

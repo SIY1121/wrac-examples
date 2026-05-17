@@ -1,6 +1,10 @@
 # wrac-examples
 
-WRAC スタックで作るオーディオプラグインの example 集です。
+[WRAC Plugin Template](https://github.com/novonotes/wrac-plugin-template) の補助的なサンプルプラグイン集です。
+
+このリポジトリは `wrac-plugin-template` とあわせて参照する補助リポジトリです。
+WRAC スタックによるオーディオプラグイン開発について知りたい場合、まず `wrac-plugin-template` を参照してください。
+このリポジトリは、追加の実装例を確認したい場合に使います。
 
 > English version: [README.md](README.md)
 
@@ -41,8 +45,10 @@ cargo xtask build --plugin=gain-basic --target=standalone
 cargo xtask launch --plugin=gain-basic
 ```
 
-## 参考
+## メインリポジトリ
 
-これらの example は [wrac-plugin-template](https://github.com/novonotes/wrac-plugin-template) を元に作成しています。
+メインプロジェクトは [wrac-plugin-template](https://github.com/novonotes/wrac-plugin-template) です。
+テンプレート、セットアップガイド、ビルドワークフロー、サポート窓口はそちらにあります。
 
-このリポジトリでは独自の issue / discussion は使っていません。質問、フィードバック、互換性報告は [wrac-plugin-template の issues](https://github.com/novonotes/wrac-plugin-template/issues) または [discussions](https://github.com/novonotes/wrac-plugin-template/discussions) を利用してください。
+このリポジトリは、そのテンプレートから作られた補助的なサンプルだけを含みます。
+質問、フィードバック、互換性レポートは [wrac-plugin-template issues](https://github.com/novonotes/wrac-plugin-template/issues) または [discussions](https://github.com/novonotes/wrac-plugin-template/discussions) を使ってください。
