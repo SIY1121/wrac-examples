@@ -40,3 +40,9 @@ For example, `examples/sine-synth` is selected with `--plugin=sine-synth`.
 cargo xtask build --plugin=gain-basic --target=standalone
 cargo xtask launch --plugin=gain-basic
 ```
+
+## Reference
+
+These examples are built from [wrac-plugin-template](https://github.com/novonotes/wrac-plugin-template).
+
+This repository does not use its own issues or discussions. Please use the [wrac-plugin-template issues](https://github.com/novonotes/wrac-plugin-template/issues) or [discussions](https://github.com/novonotes/wrac-plugin-template/discussions) for questions, feedback, and compatibility reports.
