@@ -40,3 +40,9 @@ cargo xtask build --plugin=gain-basic --target=vst3,au,standalone
 cargo xtask build --plugin=gain-basic --target=standalone
 cargo xtask launch --plugin=gain-basic
 ```
+
+## 参考
+
+これらの example は [wrac-plugin-template](https://github.com/novonotes/wrac-plugin-template) を元に作成しています。
+
+このリポジトリでは独自の issue / discussion は使っていません。質問、フィードバック、互換性報告は [wrac-plugin-template の issues](https://github.com/novonotes/wrac-plugin-template/issues) または [discussions](https://github.com/novonotes/wrac-plugin-template/discussions) を利用してください。
