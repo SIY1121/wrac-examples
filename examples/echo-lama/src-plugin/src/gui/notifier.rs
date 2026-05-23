@@ -1,0 +1,147 @@
+use std::collections::HashMap;
+use std::sync::atomic::{AtomicU64, Ordering};
+
+use novonotes_run_loop::{RunLoop, RunLoopSender};
+use parking_lot::Mutex;
+use serde_json::json;
+use wxp::Channel;
+
+use crate::plugin::parameter_value_text;
+use crate::state::EditorPage;
+
+/// Outbound notification channel that pushes GUI state to the WebView.
+pub(crate) struct GuiStateNotifier {
+    next_subscription_id: AtomicU64,
+    subscriptions: Mutex<HashMap<GuiSubscriptionId, GuiSubscription>>,
+}
+
+#[derive(Clone)]
+struct GuiSubscription {
+    kind: GuiSubscriptionKind,
+    sender: RunLoopSender,
+    channel: Channel,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub(crate) struct GuiSubscriptionId(u64);
+
+impl GuiSubscriptionId {
+    pub(crate) fn get(self) -> u64 {
+        self.0
+    }
+
+    pub(crate) fn from_raw(value: u64) -> Self {
+        Self(value)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum GuiSubscriptionKind {
+    Parameters,
+    EditorPage,
+    Voicing,
+}
+
+impl GuiStateNotifier {
+    pub(super) fn new() -> Self {
+        Self {
+            next_subscription_id: AtomicU64::new(1),
+            subscriptions: Mutex::new(HashMap::new()),
+        }
+    }
+
+    pub(crate) fn subscribe_parameters(&self, channel: Channel) -> GuiSubscriptionId {
+        self.subscribe(GuiSubscriptionKind::Parameters, channel)
+    }
+
+    pub(crate) fn subscribe_editor_page(&self, channel: Channel) -> GuiSubscriptionId {
+        self.subscribe(GuiSubscriptionKind::EditorPage, channel)
+    }
+
+    pub(crate) fn subscribe_voicing(&self, channel: Channel) -> GuiSubscriptionId {
+        self.subscribe(GuiSubscriptionKind::Voicing, channel)
+    }
+
+    fn subscribe(&self, kind: GuiSubscriptionKind, channel: Channel) -> GuiSubscriptionId {
+        let id = GuiSubscriptionId(self.next_subscription_id.fetch_add(1, Ordering::Relaxed));
+        self.subscriptions.lock().insert(
+            id,
+            GuiSubscription {
+                kind,
+                sender: RunLoop::sender(),
+                channel,
+            },
+        );
+        id
+    }
+
+    pub(crate) fn unsubscribe(&self, id: GuiSubscriptionId) {
+        self.subscriptions.lock().remove(&id);
+    }
+
+    pub(crate) fn clear_subscriptions(&self) {
+        self.subscriptions.lock().clear();
+    }
+
+    pub(crate) fn notify_parameter(&self, parameter_id: u32, value: f32) {
+        self.notify(
+            GuiSubscriptionKind::Parameters,
+            parameter_payload(parameter_id, value),
+        );
+    }
+
+    pub(crate) fn notify_editor_page(&self, editor_page: EditorPage) {
+        self.notify(
+            GuiSubscriptionKind::EditorPage,
+            editor_page_payload(editor_page),
+        );
+    }
+
+    pub(crate) fn notify_voicing(&self, voicing: bool) {
+        self.notify(GuiSubscriptionKind::Voicing, voicing_payload(voicing));
+    }
+
+    fn notify(&self, kind: GuiSubscriptionKind, payload: serde_json::Value) {
+        let subscriptions: Vec<_> = self
+            .subscriptions
+            .lock()
+            .values()
+            .filter(|subscription| subscription.kind == kind)
+            .cloned()
+            .collect();
+        if subscriptions.is_empty() {
+            return;
+        }
+
+        for subscription in subscriptions {
+            let payload = payload.clone();
+            subscription.sender.send(move || {
+                let _ = subscription.channel.send(payload);
+            });
+        }
+    }
+}
+
+/// JSON payload sent to the WebView.
+pub(crate) fn parameter_payload(parameter_id: u32, value: f32) -> serde_json::Value {
+    json!({
+        "type": "parameter-value",
+        "parameterId": parameter_id,
+        "value": value,
+        "text": parameter_value_text(parameter_id, value as f64).unwrap_or_else(|_| value.to_string()),
+    })
+}
+
+pub(crate) fn editor_page_payload(editor_page: EditorPage) -> serde_json::Value {
+    json!({
+        "type": "editor-page",
+        "page": editor_page.as_str(),
+    })
+}
+
+pub(crate) fn voicing_payload(voicing: bool) -> serde_json::Value {
+    json!({
+        "type": "voicing-state",
+        "value": voicing,
+    })
+}
