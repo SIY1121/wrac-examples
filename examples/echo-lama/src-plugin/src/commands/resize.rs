@@ -163,8 +163,6 @@ pub(super) fn register_resize_commands(
             });
 
             let (width, height) = native_request.unwrap_or((request.width, request.height));
-            // This command runs on the WebView/GUI event path, which is the only context
-            // where entering the host GUI resize extension is part of the contract.
             let size = gui_resize_handle
                 .request_resize(
                     wxp::dpi::LogicalSize::new(width, height),

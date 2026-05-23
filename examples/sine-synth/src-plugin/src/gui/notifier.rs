@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use novonotes_run_loop::{RunLoop, RunLoopSender};
 use parking_lot::Mutex;
 use serde_json::json;
 use wxp::Channel;
@@ -15,6 +14,15 @@ pub(crate) struct GuiStateNotifier {
     subscriptions: Mutex<HashMap<GuiSubscriptionId, GuiSubscription>>,
 }
 
+const _: () = {
+    fn assert_send_sync<T: Send + Sync>() {}
+
+    // Notifications may be requested by host callbacks and delivered through
+    // wxp dispatch handles, so keep the cross-thread contract visible here.
+    let _ = assert_send_sync::<GuiStateNotifier>;
+    let _ = assert_send_sync::<Channel>;
+};
+
 /// Registration record for a single WebView subscriber.
 ///
 /// Separating `kind` (which stream) from `channel` (the destination) lets parameters,
@@ -23,8 +31,6 @@ pub(crate) struct GuiStateNotifier {
 #[derive(Clone)]
 struct GuiSubscription {
     kind: GuiSubscriptionKind,
-    // Run loop sender for dispatching notifications back to the UI thread.
-    sender: RunLoopSender,
     // Channel for sending values to the JS subscriber in the WebView.
     channel: Channel,
 }
@@ -71,14 +77,9 @@ impl GuiStateNotifier {
         // IDs are assigned independently of wxp's Channel IDs so that transport and
         // subscription lifecycle can be managed separately.
         let id = GuiSubscriptionId(self.next_subscription_id.fetch_add(1, Ordering::Relaxed));
-        self.subscriptions.lock().insert(
-            id,
-            GuiSubscription {
-                kind,
-                sender: RunLoop::sender(),
-                channel,
-            },
-        );
+        self.subscriptions
+            .lock()
+            .insert(id, GuiSubscription { kind, channel });
         id
     }
 
@@ -121,12 +122,9 @@ impl GuiStateNotifier {
 
         for subscription in subscriptions {
             let payload = payload.clone();
-            // WebView channels may only be touched on the same UI thread as the GUI
-            // runtime. Sending directly from a host or audio thread would violate thread
-            // affinity, so always dispatch back through the run loop first.
-            subscription.sender.send(move || {
-                let _ = subscription.channel.send(payload);
-            });
+            // wxp::Channel owns the dispatch handle that marshals WebView work back
+            // to the GUI thread, so notifier callers do not need a run-loop context.
+            let _ = subscription.channel.send(payload);
         }
     }
 }

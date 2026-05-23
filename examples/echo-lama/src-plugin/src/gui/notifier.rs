@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 
+use novonotes_run_loop::{RunLoop, RunLoopSender};
 use parking_lot::Mutex;
 use serde_json::json;
 use wxp::Channel;
@@ -8,30 +9,16 @@ use wxp::Channel;
 use crate::plugin::parameter_value_text;
 use crate::state::EditorPage;
 
-/// Outbound notification channel that pushes GUI state to the WebView. The caller decides when to notify.
+/// Outbound notification channel that pushes GUI state to the WebView.
 pub(crate) struct GuiStateNotifier {
     next_subscription_id: AtomicU64,
     subscriptions: Mutex<HashMap<GuiSubscriptionId, GuiSubscription>>,
 }
 
-const _: () = {
-    fn assert_send_sync<T: Send + Sync>() {}
-
-    // Notifications may be requested by host callbacks and delivered through
-    // wxp dispatch handles, so keep the cross-thread contract visible here.
-    let _ = assert_send_sync::<GuiStateNotifier>;
-    let _ = assert_send_sync::<Channel>;
-};
-
-/// Registration record for a single WebView subscriber.
-///
-/// Separating `kind` (which stream) from `channel` (the destination) lets parameters,
-/// meters, and analysers be subscribed and unsubscribed independently, and prevents a
-/// stale cleanup from accidentally cancelling an unrelated subscription.
 #[derive(Clone)]
 struct GuiSubscription {
     kind: GuiSubscriptionKind,
-    // Channel for sending values to the JS subscriber in the WebView.
+    sender: RunLoopSender,
     channel: Channel,
 }
 
@@ -48,13 +35,11 @@ impl GuiSubscriptionId {
     }
 }
 
-/// Subscription kind. Add a variant when adding meter or analyser streams, and deliver
-/// to only matching subscriptions in `notify_*` — this design routes by kind rather than
-/// multiplying channels.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum GuiSubscriptionKind {
     Parameters,
     EditorPage,
+    Voicing,
 }
 
 impl GuiStateNotifier {
@@ -73,13 +58,20 @@ impl GuiStateNotifier {
         self.subscribe(GuiSubscriptionKind::EditorPage, channel)
     }
 
+    pub(crate) fn subscribe_voicing(&self, channel: Channel) -> GuiSubscriptionId {
+        self.subscribe(GuiSubscriptionKind::Voicing, channel)
+    }
+
     fn subscribe(&self, kind: GuiSubscriptionKind, channel: Channel) -> GuiSubscriptionId {
-        // IDs are assigned independently of wxp's Channel IDs so that transport and
-        // subscription lifecycle can be managed separately.
         let id = GuiSubscriptionId(self.next_subscription_id.fetch_add(1, Ordering::Relaxed));
-        self.subscriptions
-            .lock()
-            .insert(id, GuiSubscription { kind, channel });
+        self.subscriptions.lock().insert(
+            id,
+            GuiSubscription {
+                kind,
+                sender: RunLoop::sender(),
+                channel,
+            },
+        );
         id
     }
 
@@ -105,9 +97,11 @@ impl GuiStateNotifier {
         );
     }
 
+    pub(crate) fn notify_voicing(&self, voicing: bool) {
+        self.notify(GuiSubscriptionKind::Voicing, voicing_payload(voicing));
+    }
+
     fn notify(&self, kind: GuiSubscriptionKind, payload: serde_json::Value) {
-        // Clone the delivery targets before releasing the lock so that a re-entrant
-        // call from a recipient cannot deadlock.
         let subscriptions: Vec<_> = self
             .subscriptions
             .lock()
@@ -116,21 +110,19 @@ impl GuiStateNotifier {
             .cloned()
             .collect();
         if subscriptions.is_empty() {
-            // No subscribers when the GUI is closed; nothing to do.
             return;
         }
 
         for subscription in subscriptions {
             let payload = payload.clone();
-            // wxp::Channel owns the dispatch handle that marshals WebView work back
-            // to the GUI thread, so notifier callers do not need a run-loop context.
-            let _ = subscription.channel.send(payload);
+            subscription.sender.send(move || {
+                let _ = subscription.channel.send(payload);
+            });
         }
     }
 }
 
-/// JSON payload sent to the WebView. The TypeScript side expects this shape.
-/// The shape is unchanged for new parameters; routing is done by `parameterId`.
+/// JSON payload sent to the WebView.
 pub(crate) fn parameter_payload(parameter_id: u32, value: f32) -> serde_json::Value {
     json!({
         "type": "parameter-value",
@@ -144,5 +136,12 @@ pub(crate) fn editor_page_payload(editor_page: EditorPage) -> serde_json::Value 
     json!({
         "type": "editor-page",
         "page": editor_page.as_str(),
+    })
+}
+
+pub(crate) fn voicing_payload(voicing: bool) -> serde_json::Value {
+    json!({
+        "type": "voicing-state",
+        "value": voicing,
     })
 }

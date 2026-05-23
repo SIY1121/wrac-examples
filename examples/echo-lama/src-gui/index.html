@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Echo Lama</title>
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+  <body>
+    <div id="app">
+      <main class="panel">
+        <!--
+          Character zone. Placeholder llama character — its mouth opens as the
+          XY pad moves toward more open vowels (A), and its eyebrows morph with
+          the Vowel parameter. Replace the emoji-based artwork with a custom
+          SVG when the visual design is finalized.
+        -->
+        <section class="character-zone" aria-hidden="true">
+          <svg class="character-svg-defs" aria-hidden="true" width="0" height="0">
+            <defs>
+              <linearGradient id="brow-gradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#8a5a2a" />
+                <stop offset="55%" stop-color="#6a3f18" />
+                <stop offset="100%" stop-color="#432608" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="character" id="character">
+            <div class="character-face" id="character-face">
+              <svg
+                class="character-brow left"
+                viewBox="0 0 40 30"
+                preserveAspectRatio="none"
+              >
+                <path id="brow-path-left" class="character-brow-shape" d="" />
+              </svg>
+              <svg
+                class="character-brow right"
+                viewBox="0 0 40 30"
+                preserveAspectRatio="none"
+              >
+                <path id="brow-path-right" class="character-brow-shape" d="" />
+              </svg>
+              <div class="character-eye left"></div>
+              <div class="character-eye right"></div>
+              <div class="character-mouth" id="character-mouth"></div>
+            </div>
+          </div>
+          <div class="character-hands">🙏</div>
+        </section>
+
+        <!--
+          XY pad. The drag puck's X position drives Pitch (left = −12 st,
+          right = +12 st) and the Y position drives Vowel (top = I, bottom =
+          U). Each axis is a separate CLAP parameter, so a single drag opens
+          two parallel gestures on the host.
+        -->
+        <section class="pad-zone">
+          <div
+            class="pad"
+            id="xy-pad"
+            role="application"
+            aria-label="Pitch and Vowel XY pad"
+            tabindex="0"
+          >
+            <div class="pad-grid" aria-hidden="true">
+              <div class="pad-axis-x"></div>
+              <div class="pad-axis-y"></div>
+            </div>
+            <div class="pad-puck" id="pad-puck"></div>
+          </div>
+          <div class="pad-readout">
+            <div class="pad-readout-cell">
+              <span class="pad-readout-label">Pitch</span>
+              <span class="pad-readout-value" id="pitch-text">+0.00 st</span>
+            </div>
+            <div class="pad-readout-cell">
+              <span class="pad-readout-label">Vowel</span>
+              <span class="pad-readout-value" id="vowel-text">A</span>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

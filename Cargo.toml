@@ -4,6 +4,7 @@ members = [
     "examples/gain-basic/src-plugin",
     "examples/sine-synth/src-plugin",
     "examples/analyzer-3d/src-plugin",
+    "examples/echo-lama/src-plugin",
 ]
 resolver = "2"
 
