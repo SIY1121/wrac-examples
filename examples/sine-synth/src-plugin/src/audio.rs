@@ -218,11 +218,11 @@ impl WracGainAudioProcessor {
         T: FromSample,
     {
         let mut outputs = [None, None];
-        for index in 0..2 {
+        for (index, output_slot) in outputs.iter_mut().enumerate() {
             // Store raw output pointers before rendering so next_sample() can mutably
             // borrow self without also holding channel wrapper borrows. The pointers
             // remain valid for this process callback because they are host-owned buffers.
-            outputs[index] = channels
+            *output_slot = channels
                 .channel_pair(index)
                 .and_then(|mut channel| channel.output_mut().map(|output| output.as_mut_ptr()));
         }
