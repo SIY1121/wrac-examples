@@ -31,19 +31,15 @@ cargo xtask build --all --target=clap
 # Build one example.
 cargo xtask build --plugin=sine-synth --target=clap
 
+# Build release version.
+cargo xtask build --plugin=sine-synth --target=clap --release
+
 # VST3 / AU / Standalone use the wrapper builder from the template submodule.
 cargo xtask build --plugin=gain-basic --target=vst3,au,standalone
 ```
 
 The value passed to `--plugin` is the example directory name under `examples/`.
 For example, `examples/sine-synth` is selected with `--plugin=sine-synth`.
-
-## Launch Standalone
-
-```sh
-cargo xtask build --plugin=gain-basic --target=standalone
-cargo xtask launch --plugin=gain-basic
-```
 
 ## Install Plugin
 
@@ -87,6 +83,53 @@ To remove installed artifacts, use `cargo xtask uninstall`. It accepts the same 
 cargo xtask uninstall --plugin=gain-basic
 cargo xtask uninstall --plugin=gain-basic --dry-run
 ```
+
+## Launch Standalone
+
+```sh
+cargo xtask build --plugin=gain-basic --target=standalone --release
+cargo xtask launch --plugin=gain-basic --release
+```
+
+To launch the debug build instead, drop the `--release` flag from both commands. Additionally, the debug build loads its GUI from the Vite dev server, so follow the [About the Debug Build GUI](#about-the-debug-build-gui) section below to start the dev server before launching.
+
+## About the Debug Build GUI
+
+Debug builds load the GUI from the Vite dev server instead of the embedded bundle.
+The dev server must be running before the plugin window is opened in a DAW or in the standalone — otherwise the WebView shows a blank screen.
+
+Release builds embed the built `src-gui/dist` directly into the plugin binary, so the dev server is not needed.
+
+### Start the dev server
+
+Open a terminal for the example you want to debug and start Vite. Keep it running for the entire debug session. For instance if you want to debug the gain-basic plugin, run commands like this:
+
+```sh
+cd examples/gain-basic/src-gui
+npm install   # first time only
+npm run dev
+```
+
+Then, in another terminal, build the plugin in debug mode and install or launch it.
+
+```sh
+cargo xtask build --plugin=gain-basic
+cargo xtask install --plugin=gain-basic # install the plugin
+# or
+cargo xtask launch --plugin=gain-basic # launch the standalone plugin
+```
+
+Editing files under `src-gui/` triggers Vite's hot reload, so frontend changes do not require a Rust rebuild.
+
+### Changing the port
+
+The dev server URL is fixed to `http://127.0.0.1:5173/` on both the Vite side and the Rust side, so changing the port requires editing both.
+
+1. `examples/<plugin>/src-gui/vite.config.ts` — update `server.port`. `strictPort: true` is set, so Vite will not silently fall back to another port if the configured one is taken.
+2. `examples/<plugin>/src-plugin/src/gui/runtime.rs` — update the `url` literal inside the `#[cfg(debug_assertions)]` branch to match.
+3. Rebuild the plugin (`cargo xtask build --plugin=<plugin>`) and restart the dev server.
+
+If port 5173 is already in use, the simplest fix is usually to stop the other process rather than reconfiguring both sides.
 
 ## Main Repository
 
