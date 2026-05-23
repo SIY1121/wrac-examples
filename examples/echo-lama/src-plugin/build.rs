@@ -55,8 +55,7 @@ fn main() {
         .expect("src-plugin must have a parent directory")
         .join("src-gui")
         .join("dist");
-    let out_zip =
-        PathBuf::from(env::var("OUT_DIR").expect("OUT_DIR")).join("echo_lama_gui.zip");
+    let out_zip = PathBuf::from(env::var("OUT_DIR").expect("OUT_DIR")).join("echo_lama_gui.zip");
 
     // Fail early if `npm run build` was not run before the release build.
     if !gui_dist_dir.exists() {

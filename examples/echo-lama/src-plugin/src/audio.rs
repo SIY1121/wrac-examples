@@ -192,9 +192,7 @@ impl EchoLamaAudioProcessor {
                 // 0..1, Bypass is 0/1), so convert back to plain before storing. This
                 // mirrors `PluginParameters::apply_parameter_value`.
                 let plain = host_value_to_plain(event.parameter_id, event.value);
-                let _ = self
-                    .shared
-                    .set_parameter_value(event.parameter_id, plain);
+                let _ = self.shared.set_parameter_value(event.parameter_id, plain);
             }
             _ => {}
         }
@@ -248,9 +246,7 @@ fn write_outputs(audio: &mut AudioProcessBuffer<'_>, mono: &[f32]) -> PluginResu
     for mut port_pair in audio {
         match port_pair.channels()? {
             AudioPortChannels::F32(channels) => copy_mono_to_outputs(channels, mono, |s| s),
-            AudioPortChannels::F64(channels) => {
-                copy_mono_to_outputs(channels, mono, |s| s as f64)
-            }
+            AudioPortChannels::F64(channels) => copy_mono_to_outputs(channels, mono, |s| s as f64),
         }
     }
     Ok(())
@@ -352,12 +348,7 @@ impl VoiceBank {
 
     /// `None` matchers mean "match all" — used when the host sends a note-off without
     /// specifying every field.
-    fn note_off(
-        &mut self,
-        channel: Option<u8>,
-        key: Option<u8>,
-        note_id: Option<u32>,
-    ) {
+    fn note_off(&mut self, channel: Option<u8>, key: Option<u8>, note_id: Option<u32>) {
         for voice in self.voices.iter_mut().filter(|v| v.active) {
             if let Some(ch) = channel {
                 if voice.channel != ch {

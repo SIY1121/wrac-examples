@@ -107,7 +107,10 @@ mod tests {
 
     #[test]
     fn accepts_default_stereo_output() {
-        assert!(is_acceptable_output_request(&output(2, AudioPortType::Stereo)));
+        assert!(is_acceptable_output_request(&output(
+            2,
+            AudioPortType::Stereo
+        )));
         assert!(is_acceptable_output_request(&output(
             2,
             AudioPortType::Unspecified
@@ -116,7 +119,10 @@ mod tests {
 
     #[test]
     fn rejects_mono_or_input_requests() {
-        assert!(!is_acceptable_output_request(&output(1, AudioPortType::Mono)));
+        assert!(!is_acceptable_output_request(&output(
+            1,
+            AudioPortType::Mono
+        )));
         assert!(!is_acceptable_output_request(
             &AudioPortConfigurationRequest {
                 is_input: true,

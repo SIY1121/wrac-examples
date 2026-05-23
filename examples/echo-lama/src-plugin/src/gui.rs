@@ -20,7 +20,7 @@ pub(crate) use notifier::{
 };
 
 use runtime::{
-    DEFAULT_GUI_SIZE, GuiRuntimeDependencies, MAX_GUI_SIZE, MIN_GUI_SIZE, EchoLamaGuiRuntime,
+    DEFAULT_GUI_SIZE, EchoLamaGuiRuntime, GuiRuntimeDependencies, MAX_GUI_SIZE, MIN_GUI_SIZE,
 };
 use wrac_clap_adapter::{HostGuiResizeRequester, HostParameterEditNotifier};
 use wrac_wxp_gui::{GuiSizeLimits, WxpGuiController, WxpGuiResizeHandle, WxpGuiRuntime};
