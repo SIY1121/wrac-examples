@@ -3,6 +3,7 @@ members = [
     "xtask",
     "examples/gain-basic/src-plugin",
     "examples/sine-synth/src-plugin",
+    "examples/analyzer-3d/src-plugin",
 ]
 resolver = "2"
 

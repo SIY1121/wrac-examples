@@ -14,6 +14,7 @@ Use this repository when you want to inspect additional example implementations.
 examples/
   gain-basic/   Basic audio-effect gain plugin.
   sine-synth/   MIDI note input to sine-wave instrument output.
+  analyzer-3d/  3D rich Analyzer example.
 ```
 
 ## Setup

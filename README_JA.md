@@ -14,6 +14,7 @@ WRAC スタックによるオーディオプラグイン開発について知り
 examples/
   gain-basic/   基本的な audio effect の gain plugin。
   sine-synth/   MIDI note input でサイン波を出す instrument plugin。
+  analyzer-3d/  リッチな3D表現のアナライザー
 ```
 
 ## セットアップ
