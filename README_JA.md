@@ -45,6 +45,49 @@ cargo xtask build --plugin=gain-basic --target=standalone
 cargo xtask launch --plugin=gain-basic
 ```
 
+## プラグインのインストール
+
+`install` は、ビルド済みのプラグインの artifact を DAW がスキャンするディレクトリにコピーします。
+事前に `build` を実行しておく必要があります（`install` はビルドを行いません）。
+
+```sh
+# ひとつの example を user-local のプラグインフォルダにインストール
+cargo xtask install --plugin=gain-basic
+
+# すべての example をインストール
+cargo xtask install --all
+
+# release の artifact をインストール
+cargo xtask install --plugin=gain-basic --release
+
+# 特定のフォーマットだけをインストール
+cargo xtask install --plugin=gain-basic --target=clap,vst3
+
+# user-local ではなく system-wide にインストール
+cargo xtask install --plugin=gain-basic --scope=system
+```
+
+デフォルトの target は OS ごとに決まります（macOS: clap, vst3, au / Windows・Linux: clap, vst3）。
+`standalone` はプラグインフォーマットではないので、このコマンドではインストールできません。代わりに `launch` を使ってください。
+
+scope ごとのインストール先:
+
+| OS      | Scope  | CLAP                                 | VST3                                 | AU                                          |
+| ------- | ------ | ------------------------------------ | ------------------------------------ | ------------------------------------------- |
+| macOS   | user   | `~/Library/Audio/Plug-Ins/CLAP`      | `~/Library/Audio/Plug-Ins/VST3`      | `~/Library/Audio/Plug-Ins/Components`       |
+| macOS   | system | `/Library/Audio/Plug-Ins/CLAP`       | `/Library/Audio/Plug-Ins/VST3`       | `/Library/Audio/Plug-Ins/Components`        |
+| Windows | user   | `%LOCALAPPDATA%\Programs\Common\CLAP` | `%LOCALAPPDATA%\Programs\Common\VST3` | —                                           |
+| Windows | system | `%CommonProgramFiles%\CLAP`           | `%CommonProgramFiles%\VST3`           | —                                           |
+| Linux   | user   | `~/.clap`                            | `~/.vst3`                            | —                                           |
+| Linux   | system | `/usr/lib/clap`                      | `/usr/lib/vst3`                      | —                                           |
+
+インストール済みの artifact を削除するには `cargo xtask uninstall` を使います。`--plugin` / `--all` / `--target` は install と同じく指定でき、加えて `--scope=all|user|system`（デフォルトは `all`）と、削除せずに対象パスだけを表示する `--dry-run` があります。
+
+```sh
+cargo xtask uninstall --plugin=gain-basic
+cargo xtask uninstall --plugin=gain-basic --dry-run
+```
+
 ## メインリポジトリ
 
 メインプロジェクトは [wrac-plugin-template](https://github.com/novonotes/wrac-plugin-template) です。
