@@ -48,6 +48,30 @@
 			},
 			"terminal": "console",
 			"preLaunchTask": "build-sine-synth-standalone"
-		}
+		},
+		{
+			"name": "Debug analyzer-3d standalone",
+			"type": "lldb",
+			"request": "launch",
+			"program": "${workspaceFolder}/target/wrac-examples/analyzer-3d/wrac/standalone/debug/WRAC Analyzer 3D Standalone.app/Contents/MacOS/WRAC Analyzer 3D Standalone",
+			"osx": {
+				"request": "attach",
+				"program": "${workspaceFolder}/target/wrac-examples/analyzer-3d/wrac/standalone/debug/WRAC Analyzer 3D Standalone.app/Contents/MacOS/WRAC Analyzer 3D Standalone",
+				"preLaunchTask": "build-and-open-analyzer-3d-standalone"
+			},
+			"windows": {
+				"program": "${workspaceFolder}/target/wrac-examples/analyzer-3d/wrac/standalone/debug/WRAC Analyzer 3D Standalone.exe"
+			},
+			"linux": {
+				"program": "${workspaceFolder}/target/wrac-examples/analyzer-3d/wrac/standalone/debug/WRAC Analyzer 3D Standalone"
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}",
+			"env": {
+				"RUST_BACKTRACE": "1"
+			},
+			"terminal": "console",
+			"preLaunchTask": "build-analyzer-3d-standalone"
+		},
 	]
 }

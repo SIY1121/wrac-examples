@@ -98,6 +98,55 @@
 				"panel": "new",
 				"close": true
 			}
+		},
+		{
+			"label": "build-analyzer-3d-standalone",
+			"type": "process",
+			"command": "cargo",
+			"args": [
+				"xtask",
+				"build",
+				"--plugin",
+				"analyzer-3d",
+				"--target",
+				"standalone"
+			],
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "new",
+				"close": true
+			},
+			"problemMatcher": "$rustc"
+		},
+		{
+			"label": "open-analyzer-3d-standalone",
+			"type": "process",
+			"command": "cargo",
+			"args": [
+				"xtask",
+				"launch",
+				"--plugin",
+				"analyzer-3d"
+			],
+			"presentation": {
+				"reveal": "always",
+				"panel": "new",
+				"close": true
+			}
+		},
+		{
+			"label": "build-and-open-analyzer-3d-standalone",
+			"dependsOrder": "sequence",
+			"dependsOn": [
+				"build-analyzer-3d-standalone",
+				"open-analyzer-3d-standalone"
+			],
+			"presentation": {
+				"reveal": "always",
+				"panel": "new",
+				"close": true
+			}
 		}
 	]
 }
