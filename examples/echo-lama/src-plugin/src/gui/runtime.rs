@@ -9,9 +9,7 @@ use wrac_clap_adapter::{
     GuiConfiguration, GuiSize, HostGuiResizeRequester, HostParameterEditNotifier, PluginError,
     PluginResult,
 };
-use wrac_wxp_gui::{
-    DpiConverter, ParentWindowHandle, WxpGuiResizeHandle, WxpGuiRuntime,
-};
+use wrac_wxp_gui::{DpiConverter, ParentWindowHandle, WxpGuiResizeHandle, WxpGuiRuntime};
 use wxp::{WebContext, WxpCommandHandler, WxpWebView, WxpWebViewBuilder, dpi::LogicalSize};
 
 use crate::commands::register_commands;
@@ -38,7 +36,6 @@ pub(super) const MAX_GUI_SIZE: GuiSize = GuiSize {
     width: 396,
     height: 573,
 };
-
 
 // Embed the frontend zip only for release builds; debug builds use the Vite dev server.
 #[cfg(not(debug_assertions))]
